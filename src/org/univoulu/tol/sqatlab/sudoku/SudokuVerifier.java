@@ -2,21 +2,32 @@ package org.univoulu.tol.sqatlab.sudoku;
 
 public class SudokuVerifier {
 
-	public int verify(String candidateSolution) {
-		return r1(candidateSolution);
+	public int verify(String candidateSolution) throws IncorrectSizeException{
+		if(candidateSolution.length() != 81){
+			throw new IncorrectSizeException();
+		}
+		if(r1(candidateSolution) != 0){
+			return -1;
+		}
+		if(r2(candidateSolution) != 0){
+			return -2;
+		}
+		if(r3(candidateSolution) != 0){
+			return -3;
+		}
+		if(r4(candidateSolution) != 0){
+			return -4;
+		}
+		return 0;
 	}
 	
 	public int r1(String candidato){
-		int risultato = 0;
-		int[] sudokuArray = new int[candidato.length()];
-		
 		for(int i = 0;i<candidato.length();i++){
-			sudokuArray[i] = Character.getNumericValue(candidato.charAt(i));
-			if(sudokuArray[i] < 1){
-				risultato = -1;
+			if(!Character.isDigit(candidato.toCharArray()[i])){
+				return -1;
 			}
 		}
-		return risultato;
+		return 0;
 	}
 	
 	public boolean differentDigits(String numeri){
@@ -36,42 +47,57 @@ public class SudokuVerifier {
 	}
 	
 	public int r2(String candidato){
-		int risultato = 0;
-		String holder="";
+		String subGrid1, subGrid2, subGrid3 ="";
 		
-		for(int j=0;j<3;j++){
-			for(int i=0; i<9;i++){
-				for(int k=0; k<3; k++){
-					if(j==1){
-						k+=3;
-					}
-					if(j==2){
-						k+=6;
-					}
-					holder+=candidato.charAt(k);
-				}
-				if(i==2 || i==5 || i==8){
-					if(!differentDigits(holder)){
-						risultato = -1;
-					}
-				}
+		for(int counter = 0; counter < 3 ; counter ++){
+			int min = counter * 27;
+			String subString = candidato.substring(min,min + 27);//endIdex non è compreso
+			subGrid1 = computeSubGrid(subString,1);
+			subGrid2 = computeSubGrid(subString,2);
+			subGrid3 = computeSubGrid(subString,3);
+			if(!differentDigits(subGrid1) || !differentDigits(subGrid2) || !differentDigits(subGrid3)){
+				return -1;
 			}
+			subGrid1 ="";
+			subGrid2 ="";
+			subGrid3 ="";
 		}
-		return risultato;
+		
+		return 0;
+	}
+	
+	public String computeSubGrid(String initialString, int index){
+		String subString = "";
+		for(int i=0;i<3;i++){
+			int min = 9*i + 3*(index-1);
+			subString += initialString.substring(min, min + 3);//endIdex non è compreso
+		}
+		return subString;
 	}
 	
 	public int r3(String candidato){
-		int risultato = 0;
 		int min=0;
-		int max=9;
 		
 		for(int i=0; i<9;i++){
-			if(!differentDigits(candidato.substring(min, max))){
-				risultato = -1;
+			min = 9*i;
+			if(!differentDigits(candidato.substring(min, min + 9))){
+				return -1;
 			}
-			min = max;
-			max +=9;
 		}
-		return risultato;
+		return 0;
+	}
+	
+	public int r4(String candidato){
+		String column = "";
+		for(int j=0;j<9;j++){	
+			for(int i=0;i<9;i++){
+				column += candidato.charAt(j+(9*i));
+			}
+			if(!differentDigits(column)){
+					return -1;
+				}
+			column = "";
+		}
+		return 0;
 	}
 }
